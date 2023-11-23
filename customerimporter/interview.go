@@ -6,11 +6,9 @@
 package customerimporter
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 )
@@ -34,14 +32,8 @@ func getDomainFromRow(row []string, emailColIndex int) string {
 	return strings.ToLower(emailParts[1])
 }
 
-func GetDomainCounts(filepath string) ([]*Domain, error) {
-	f, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	csvReader := csv.NewReader(bufio.NewReader(f))
+func GetDomainCounts(file io.Reader) ([]Domain, error) {
+	csvReader := csv.NewReader(file)
 
 	emailColIndex := -1
 	headerRow, err := csvReader.Read()
@@ -54,7 +46,7 @@ func GetDomainCounts(filepath string) ([]*Domain, error) {
 		}
 	}
 	if emailColIndex < 0 {
-		return nil, fmt.Errorf("email column not found in file: %s", filepath)
+		return nil, fmt.Errorf("email column not found")
 	}
 
 	domainCounts := map[string]int{}
@@ -75,9 +67,9 @@ func GetDomainCounts(filepath string) ([]*Domain, error) {
 		domainCounts[domain]++
 	}
 
-	domains := []*Domain{}
+	domains := []Domain{}
 	for name, count := range domainCounts {
-		domains = append(domains, &Domain{Name: name, Count: count})
+		domains = append(domains, Domain{Name: name, Count: count})
 	}
 	sort.Slice(domains, func(a, b int) bool {
 		return domains[a].Name < domains[b].Name

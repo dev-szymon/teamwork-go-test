@@ -1,6 +1,7 @@
 package customerimporter
 
 import (
+	"os"
 	"testing"
 )
 
@@ -44,7 +45,12 @@ func TestGetDomainCounts(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			given, err := GetDomainCounts(tc.filepath)
+			f, err := os.Open(tc.filepath)
+			if err != nil {
+				t.Errorf("file not found: %s\n", tc.filepath)
+			}
+
+			given, err := GetDomainCounts(f)
 			if tc.shouldError {
 				if err == nil {
 					t.Errorf("%s: expected error, got nil\n", tc.name)
